@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emoji Mosaic</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111;
+    --border: #222;
+    --accent: #e8ff47;
+    --text: #f0f0f0;
+    --muted: #555;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    gap: 1.5rem;
+  }
+
+  h1 {
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  label {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+
+  .file-btn {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: opacity 0.15s;
+  }
+
+  .file-btn:hover { opacity: 0.85; }
+
+  select, input[type="text"], input[type="range"] {
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  select:focus, input:focus { border-color: var(--accent); }
+
+  input[type="range"] {
+    padding: 0;
+    width: 100px;
+    accent-color: var(--accent);
+  }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .btn:hover { background: var(--accent); color: #000; }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn.primary:hover { opacity: 0.85; background: var(--accent); }
+
+  .status {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  #output-wrap {
+    width: 100%;
+    max-width: 900px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: auto;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #output {
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    display: block;
+    padding: 8px;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', monospace;
+  }
+
+  .placeholder {
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-align: center;
+    padding: 3rem;
+  }
+
+  #customText { width: 60px; }
+
+  .range-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #sizeVal {
+    font-size: 0.72rem;
+    color: var(--accent);
+    min-width: 1.5rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div style="text-align:center; margin-top:40px;">
+  <h1>Emojixellab</h1>
+  <h3>Convert Photos to Emoji and Symbol Art</h3>
+  <p>Made with ❤️loVe by Sameer Al Sahab</p>
+  <p>
+    <a href="https://github.com/SameerAlSahab/EmojixelLab" target="_blank">
+      GitHub Repository
+    </a>
+  </p>
+</div>
+
+<div class="controls">
+  <label for="upload">Image</label>
+  <label class="file-btn" for="upload">Choose File</label>
+  <input type="file" id="upload" accept="image/*">
+
+  <label for="mode">Mode</label>
+  <select id="mode">
+    <option value="emoji">Emoji</option>
+    <option value="symbol">Symbol</option>
+  </select>
+
+  <div id="customWrap" style="display:none; gap:0.5rem; align-items:center; display:flex">
+    <label>Char</label>
+    <input type="text" id="customText" maxlength="2" value="#">
+  </div>
+
+  <div class="range-group">
+    <label>Detail</label>
+    <input type="range" id="blockSize" min="4" max="20" value="16">
+    <span id="sizeVal">16</span>
+  </div>
+
+  <button class="btn primary" onclick="convertImage()">Convert</button>
+  <button class="btn" id="dlBtn" onclick="downloadImage()" disabled>Download</button>
+
+  <span class="status" id="status">Upload an image to start</span>
+</div>
+
+<div id="output-wrap">
+  <div class="placeholder" id="placeholder">Your result will appear here</div>
+  <pre id="output" style="display:none"></pre>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const upload = document.getElementById("upload");
+const output = document.getElementById("output");
+const modeEl = document.getElementById("mode");
+const customText = document.getElementById("customText");
+const customWrap = document.getElementById("customWrap");
+const blockSizeEl = document.getElementById("blockSize");
+const sizeVal = document.getElementById("sizeVal");
+const statusEl = document.getElementById("status");
+const dlBtn = document.getElementById("dlBtn");
+const placeholder = document.getElementById("placeholder");
+
+let originalCanvas = document.createElement("canvas");
+let ctx = originalCanvas.getContext("2d");
+let emojiList = [];
+let emojiReady = false;
+
+
+modeEl.addEventListener("change", () => {
+  customWrap.style.display = modeEl.value === "symbol" ? "flex" : "none";
+});
+
+blockSizeEl.addEventListener("input", () => {
+  sizeVal.textContent = blockSizeEl.value;
+});
+
+upload.addEventListener("change", () => {
+  if (upload.files[0]) statusEl.textContent = "Ready — hit Convert";
+});
+
+
+function getAllEmojis() {
+  const emojis = [];
+  const ranges = [
+    [0x1F600, 0x1F64F],
+    [0x1F300, 0x1F5FF],
+    [0x1F680, 0x1F6FF],
+    [0x2600,  0x26FF],
+    [0x2700,  0x27BF],
+    [0x1F900, 0x1F9FF],
+    [0x1FA00, 0x1FAFF]
+  ];
+  ranges.forEach(([start, end]) => {
+    for (let i = start; i <= end; i++) {
+      try { emojis.push(String.fromCodePoint(i)); } catch {}
+    }
+  });
+  return emojis;
+}
+
+function getEmojiAverageColor(emoji) {
+  const size = 32;
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const c = canvas.getContext("2d");
+  c.font = "28px serif";
+  c.textAlign = "center";
+  c.textBaseline = "middle";
+  c.fillText(emoji, size / 2, size / 2);
+  const data = c.getImageData(0, 0, size, size).data;
+  let r = 0, g = 0, b = 0, count = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 10) continue;
+    r += data[i]; g += data[i+1]; b += data[i+2]; count++;
+  }
+  if (count === 0) return null;
+  return [r/count, g/count, b/count];
+}
+
+function buildEmojiDatabase() {
+  statusEl.textContent = "Building emoji DB...";
+  const emojis = getAllEmojis();
+  emojis.forEach(e => {
+    const color = getEmojiAverageColor(e);
+    if (color) emojiList.push({ emoji: e, rgb: color });
+  });
+  emojiReady = true;
+  statusEl.textContent = `Emoji DB ready (${emojiList.length} emojis) — upload an image`;
+}
+
+buildEmojiDatabase();
+
+
+function colorDistance(r1,g1,b1, r2,g2,b2) {
+  const dr=r1-r2, dg=g1-g2, db=b1-b2;
+  return Math.sqrt(0.299*dr*dr + 0.587*dg*dg + 0.114*db*db);
+}
+
+function closestEmoji(r, g, b) {
+  let best = null, bestDist = Infinity;
+  for (let i = 0; i < emojiList.length; i++) {
+    const e = emojiList[i];
+    const dist = colorDistance(r,g,b, e.rgb[0],e.rgb[1],e.rgb[2]);
+    if (dist < bestDist) { bestDist = dist; best = e.emoji; }
+  }
+  return best || "⬜";
+}
+
+
+function convertImage() {
+  if (!emojiReady) return alert("Emoji database still loading...");
+  const file = upload.files[0];
+  if (!file) return alert("Upload an image first");
+
+  statusEl.textContent = "Processing...";
+  dlBtn.disabled = true;
+  placeholder.style.display = "none";
+  output.style.display = "none";
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      originalCanvas.width = img.width;
+      originalCanvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      const blockSize = parseInt(blockSizeEl.value);
+      const isEmoji = modeEl.value === "emoji";
+      const txt = customText.value || "#";
+
+ 
+      let html = "";
+
+      for (let y = 0; y < img.height; y += blockSize) {
+        for (let x = 0; x < img.width; x += blockSize) {
+          const data = ctx.getImageData(x, y, blockSize, blockSize).data;
+          let r=0, g=0, b=0, count=0;
+          for (let i=0; i<data.length; i+=4) {
+            if (data[i+3] < 10) continue;
+            r+=data[i]; g+=data[i+1]; b+=data[i+2]; count++;
+          }
+          if (count === 0) { html += " "; continue; }
+          r/=count; g/=count; b/=count;
+
+          if (isEmoji) {
+            const e = closestEmoji(r, g, b);
+
+            html += `<span class="ep" style="--er:${Math.round(r)};--eg:${Math.round(g)};--eb:${Math.round(b)}">${e}</span>`;
+          } else {
+            html += `<span style="color:rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})">${txt}</span>`;
+          }
+        }
+        html += "\n";
+      }
+
+      output.innerHTML = html;
+      output.style.display = "block";
+      statusEl.textContent = "Done!";
+      dlBtn.disabled = false;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+
+function downloadImage() {
+  statusEl.textContent = "Rendering...";
+  html2canvas(output, { backgroundColor: "#0a0a0a", scale: 1 }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "emoji-mosaic.png";
+    link.href = canvas.toDataURL();
+    link.click();
+    statusEl.textContent = "Downloaded!";
+  });
+}
+</script>
+
+<style>
+
+  .ep {
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+  }
+  .ep::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgb(var(--er), var(--eg), var(--eb));
+    mix-blend-mode: multiply;
+    border-radius: 1px;
+    pointer-events: none;
+  }
+  #output {
+    background: #fff; 
+  }
+</style>
+
+</body>
+</html>
